@@ -1,22 +1,34 @@
 #ifndef OPERATIONSDV1_H_INCLUDED
 #define OPERATIONSDV1_H_INCLUDED
 
-extern char cardNumber[15][12];
+typedef struct
+{
+    char name[10];
+    int min;
+    int max;
+    int dislength;
+} Type;
 
-int get_option_qty();
+typedef struct
+{
+    char **array;
+    int size;
+} StringArray;
 
-char **get_option_names(char **pOptions, int optQty);
+int get_int_value(Type type);
 
-int get_factor_qty();
+StringArray get_string_array(Type type);
 
-char **get_factor_name(char **pFactors, int facQty);
+StringArray sort_factor(StringArray factorArray);
 
-char **sort_factor(char **pFactors, int facQty);
+float *qtfy_factor(StringArray factorArray);
 
-float *qtfy_factor(char **pFactors, float *pfGrade, int facQty);
+float *rate_compat(StringArray optionArray, StringArray factorArray);
 
-float *rate_compat(char **pOptions, char **pFactors, float *pArray, int optQty, int arrayQty);
+float *tally_sums(StringArray optionArray, StringArray factorArray, float *compatability, float *pfGrade);
 
-//void tally_option_sums(float** finalGrade, float** finalGradeSum, float* pArray, float* pfGrade,
+void display_output_spreadsheet(StringArray optionsArray, StringArray factorsArray, float *compatability, float *pfGrade);
+
+void display_option_totals(StringArray optionsArray, float *finalGradeSum);
 
 #endif // OPERATIONSDV1_H_INCLUDED

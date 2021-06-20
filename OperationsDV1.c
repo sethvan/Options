@@ -4,127 +4,113 @@
 #include "seth.h"
 #include "OperationsDV1.h"
 
+#define LINE_LENGTH 119
+
 char cardNumber[15][12] = {"first", "second", "third", "fourth", "fifth", "sixth", "seventh",
                            "eighth", "ninth", "tenth", "eleventh", "twelfth", "thirteenth",
                            "fourteenth", "fifteenth"};
 
-int get_option_qty()
+int get_int_value(Type type)
 {
-    int optQty;
+    int intVal;
     do
     {
-        printf("How many options are you considering? (maximum 5)\n"
-               "Number of options? = ");
-        if ((scanf("%i", &optQty) != 1) || (optQty < 2 || optQty > 5))
+        printf("\nHow many %ss are you considering? (maximum%d)\nNumber of %ss? = ", type.name, type.max, type.name);
+        if ((scanf("%i", &intVal) != 1) || (intVal < type.min || intVal > type.max))
         {
-            printf("\nInvalid entry, please enter an integer between 2 and 5.\n");
+            printf("\nInvalid entry, please enter an integer between %d and %d.\n", type.min, type.max);
             while ((getchar()) != '\n')
                 ;
         }
-    } while (optQty < 2 || optQty > 5);
+    } while (intVal < type.min || intVal > type.max);
     getchar();
 
-    return optQty;
+    return intVal;
 }
 
-char **get_option_names(char **pOptions, int optQty)
+StringArray get_string_array(Type type)
 {
-    printf("\nWe will now enter the names of your options, please keep them short as\n"
-           " the output spreadsheet will only display the first 15 characters\n");
-    for (int i = 0; i < optQty; ++i)
+    StringArray sa;
+
+    sa.size = get_int_value(type);
+
+    sa.array = NULL;
+    if (!(sa.array = malloc(sa.size * sizeof(char *))))
     {
-        if (!(pOptions[i] = malloc(20 * sizeof(char))))
+        printf("Failure to allocate memory!\n");
+        exit(1);
+    }
+
+    printf("\nWe will now enter the names of your %ss, please keep them short as\n"
+           " the output spreadsheet will only display the first %d characters\n",
+           type.name, type.dislength);
+
+    for (int i = 0; i < sa.size; ++i)
+    {
+        if (!(sa.array[i] = malloc(30)))
         {
             printf("Failure to allocate memory!");
-            break;
+            exit(1);
         }
-        printf("\nWhat is your %s option?:\n", cardNumber[i]);
-        myGets(pOptions[i], 50);
+        printf("\nWhat is your %s %s?:\n", cardNumber[i], type.name);
+        myGets(sa.array[i], 30);
     }
-    return pOptions;
+
+    return sa;
 }
 
-int get_factor_qty()
-{
-    int facQty = 0;
-    do
-    {
-        printf("\nHow many factors are you using to compare your options? (maximum 15)\n "
-               "Number of factors? =  ");
-        if ((scanf("%i", &facQty) != 1) || (facQty < 1 || facQty > 15))
-        {
-            printf("\nInvalid entry, please enter an integer between 1 and 15.\n");
-            while ((getchar()) != '\n')
-                ;
-        }
-    } while (facQty < 1 || facQty > 15);
-    getchar();
-
-    return facQty;
-}
-
-char **get_factor_name(char **pFactors, int facQty)
-{
-    printf("\nWe will now enter the names of your factors, please keep them short as\n"
-           " the output spreadsheet will only display the first 23 characters\n");
-    for (int i = 0; i < facQty; ++i)
-    {
-        if (!(pFactors[i] = malloc(30 * sizeof(char))))
-        {
-            printf("Failure to allocate memory!");
-            break;
-        }
-        printf("\nIn few words what is  the %s factor? \n", cardNumber[i]);
-        myGets(pFactors[i], 70);
-    }
-    return pFactors;
-}
-
-char **sort_factor(char **pFactors, int facQty)
+StringArray sort_factor(StringArray factorArray)
 {
     char *temp = NULL;
     int mostImportant = 0;
-    for (int i = 0; i < facQty - 1; ++i)
+    for (int i = 0; i < factorArray.size - 1; ++i)
     {
         if (i == 0)
             printf("\nAmong the factors listed below, which is the most important?\n");
         else
             printf("\nAnd which is the most important of these that remain?\n\n");
 
-        for (int j = 1; j < facQty - i + 1; ++j)
+        for (int j = 1; j < factorArray.size - i + 1; ++j)
         {
-            printf("%i. %s\n", j, pFactors[i + j - 1]);
+            printf("%i. %s\n", j, factorArray.array[i + j - 1]);
         }
         do
         {
             printf("\nEnter the corresponding number:  ");
-            if ((scanf("%i", &mostImportant) != 1) || (mostImportant < 1 || mostImportant > facQty - i))
+            if ((scanf("%i", &mostImportant) != 1) || (mostImportant < 1 || mostImportant > factorArray.size - i))
             {
-                printf("\nInvalid entry, please enter an integer between 1 and %i.\n", facQty - i);
+                printf("\nInvalid entry, please enter an integer between 1 and %i.\n", factorArray.size - i);
                 while ((getchar()) != '\n')
                     ;
             }
-        } while (mostImportant < 1 || mostImportant > facQty - i);
+        } while (mostImportant < 1 || mostImportant > factorArray.size - i);
         getchar();
 
         mostImportant += i - 1;
 
-        temp = pFactors[mostImportant];
-        pFactors[mostImportant] = pFactors[i];
-        pFactors[i] = temp;
+        temp = factorArray.array[mostImportant];
+        factorArray.array[mostImportant] = factorArray.array[i];
+        factorArray.array[i] = temp;
     }
-    return pFactors;
+    return factorArray;
 }
 
-float *qtfy_factor(char **pFactors, float *pfGrade, int facQty)
+float *qtfy_factor(StringArray factorArray)
 {
-    for (int i = 0; i < facQty; ++i)
+    float *pfGrade = NULL;
+    if (!(pfGrade = malloc(factorArray.size * sizeof(float))))
+    {
+        printf("Failure to allocate memory!\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < factorArray.size; ++i)
     {
         do
         {
-            printf("From 1-1000 how important is the factor of:\n"
+            printf("\nFrom 1-1000 how important is the factor of:\n"
                    "\"%s\"?: ",
-                   pFactors[i]);
+                   factorArray.array[i]);
             if ((scanf("%f", &pfGrade[i]) != 1) || (pfGrade[i] < 1.0f || pfGrade[i] > 1000.0f))
             {
                 printf("\nInvalid entry, please enter a number between 1 and 1000.\n");
@@ -138,23 +124,111 @@ float *qtfy_factor(char **pFactors, float *pfGrade, int facQty)
     return pfGrade;
 }
 
-float *rate_compat(char **pOptions, char **pFactors, float *pArray, int optQty, int arrayQty)
+float *rate_compat(StringArray optionArray, StringArray factorArray)
 {
-    for (int i = 0; i < (int)arrayQty; ++i)
+    int size = factorArray.size * optionArray.size;
+
+    float *compatability = NULL;
+    if (!(compatability = malloc(size * sizeof(float))))
+    {
+        printf("Failure to allocate memory!\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < size; ++i)
     {
         do
         {
-            printf("From 0-100 how ideal is option \"%s\"\n"
+            printf("From 0-1000 how ideal is option \"%s\"\n"
                    "for factor \"%s\"?:",
-                   pOptions[i % (int)optQty], pFactors[i / (int)optQty]);
-            if ((scanf("%f", &pArray[i]) != 1) || (pArray[i] < 0 || pArray[i] > 100))
+                   optionArray.array[i % optionArray.size], factorArray.array[i / optionArray.size]);
+            if ((scanf("%f", &compatability[i]) != 1) || (compatability[i] < 0 || compatability[i] > 1000))
             {
                 printf("\nInvalid entry, please enter an integer between 0 and 100.\n");
                 while ((getchar()) != '\n')
                     ;
             }
-        } while (pArray[i] < 0 || pArray[i] > 100);
+        } while (compatability[i] < 0 || compatability[i] > 1000);
         printf("\n\n");
     }
-    return pArray;
+    return compatability;
+}
+
+float *tally_sums(StringArray optionArray, StringArray factorArray, float *compatability, float *pfGrade)
+{
+    int fGradeSize = optionArray.size * factorArray.size;
+    float *finalGrade = NULL, *finalGradeSum = NULL;
+
+    if (!(finalGrade = malloc(fGradeSize * sizeof(float))) ||
+        !(finalGradeSum = calloc(optionArray.size, sizeof(float))))
+    {
+        printf("Failure to allocate memory!\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < fGradeSize; ++i)
+    {
+        finalGrade[i] = compatability[i] * pfGrade[i / optionArray.size];
+        finalGradeSum[i % optionArray.size] += finalGrade[i];
+    }
+
+    free(finalGrade);
+    return finalGradeSum;
+}
+
+void display_output_spreadsheet(StringArray optionsArray, StringArray factorsArray, float *compatability, float *pfGrade)
+{
+    int line = 0;
+    printf("\n\n\n%38s%-80s\n", " ", "          Compatabilities of the options with each corresponding factor");
+    printf("%38s", "Factor     ");
+    for (line = 0; line < 81; line++)
+        putchar('-');
+    printf("\n%-26s%s", "Priority of factors", "|Importance |");
+    for (int i = 0; i < optionsArray.size; ++i)
+    {
+        printf("%-15.15s"
+               "|",
+               optionsArray.array[i]);
+    }
+
+    if (optionsArray.size < 5)
+    {
+        for (line = 0; line < 79 - (optionsArray.size * 16); line++)
+            putchar(' ');
+        putchar('|');
+    }
+    printf("\n");
+
+    for (line = 0; line < LINE_LENGTH; line++)
+        putchar('-');
+    for (int i = 0; i < factorsArray.size; ++i)
+    {
+        printf("\n%2i.%-22.22s |   %4.0lf    |", i + 1, factorsArray.array[i], pfGrade[i]);
+        for (int j = i * optionsArray.size; j < (i + 1) * optionsArray.size; ++j)
+            printf("      %3.0lf      |", compatability[j]);
+    }
+    printf("\n\n");
+}
+
+void display_option_totals(StringArray optionsArray, float *finalGradeSum)
+{
+    printf("\nScore totals in favor of each option:\n\n");
+    float best = 0.0f;
+    int index = 0;
+
+    for (int j = 0; j < optionsArray.size; ++j)
+    {
+        for (int i = 0; i < optionsArray.size; ++i)
+        {
+            if (finalGradeSum[i] > best)
+            {
+                best = finalGradeSum[i];
+                index = i;
+            }
+        }
+        printf("%-20s=  %.0f\n", optionsArray.array[index], finalGradeSum[index]);
+        finalGradeSum[index] = 0.0f;
+        best = 0.0f;
+    }
+    printf(("\n\n\n\n"));
 }
