@@ -9,7 +9,7 @@ Type factors = {"factor", 1, 15, 23};
 int main()
 {
     StringArray optionsArray = get_string_array(options);
-    printf("OptionsArray.size = %i\n", optionsArray.size);
+    
     StringArray factorsArray = get_string_array(factors);
 
     factorsArray = sort_factor(factorsArray);
