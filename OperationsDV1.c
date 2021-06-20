@@ -154,7 +154,7 @@ float *rate_compat(StringArray optionArray, StringArray factorArray)
                    optionArray.array[i % optionArray.size], factorArray.array[i / optionArray.size]);
             if ((scanf("%f", &compatability[i]) != 1) || (compatability[i] < 0 || compatability[i] > 1000))
             {
-                printf("\nInvalid entry, please enter an integer between 0 and 100.\n");
+                printf("\nInvalid entry, please enter an integer between 0 and 1000.\n");
                 while ((getchar()) != '\n')
                     ;
             }
