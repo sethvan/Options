@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "seth.h"
 #include "OperationsDV1.h"
 
 #define LINE_LENGTH 119
@@ -26,6 +25,17 @@ int get_int_value(Type type)
     getchar();
 
     return intVal;
+}
+
+char *myGets(char *st, int n)
+{
+    char *ret_val;
+    if ((ret_val = fgets(st, n, stdin)) != NULL)
+    {
+        st[strcspn(st, "\n")] = 0;
+    }
+
+    return ret_val;
 }
 
 StringArray get_string_array(Type type)

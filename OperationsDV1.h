@@ -17,6 +17,8 @@ typedef struct
 
 int get_int_value(Type type);
 
+char *myGets(char *st, int n);
+ 
 StringArray get_string_array(Type type);
 
 StringArray sort_factor(StringArray factorArray);

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "seth.h"
 #include "OperationsDV1.h"
 
 Type options = {"option", 2, 5, 15};
@@ -9,7 +8,7 @@ Type factors = {"factor", 1, 15, 23};
 int main()
 {
     StringArray optionsArray = get_string_array(options);
-    
+
     StringArray factorsArray = get_string_array(factors);
 
     factorsArray = sort_factor(factorsArray);
